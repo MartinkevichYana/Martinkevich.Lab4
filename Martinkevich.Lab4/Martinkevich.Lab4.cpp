@@ -3,17 +3,18 @@
 
 using namespace std;
 
-bool IsDataValid(double, double, double, double);
-double Trapezium(double, double, double);
-double Simpson(double, double, double);
-double TwinRates(double, double, double, double);
-double TwinRate(double, double, double, double);
+bool IsDataValid(double, double, double, int);
+typedef double(*F) (double, double, int);
+double TwinRates(double, double, int, double, F);
+double Trapezium(double, double, int);
+double Simpson(double, double, int);
 
 int main()
 {
 	while (true)
 	{
-		double a, b, n, eps;
+		double a, b, eps;
+		int n;
 		cout << "Enter a < b " << endl;
 		cout << "a: ";
 		cin >> a;
@@ -26,8 +27,10 @@ int main()
 		if (IsDataValid(a, b, eps, n) != 0)
 		{
 			system("cls");
-			cout << "Component formula of Trapezium: " << TwinRates(a, b, n, eps) << endl;
-			cout << "Component formula of Simpson: " << TwinRate(a, b, n, eps) << endl;
+			F Form = Trapezium;
+			cout << "Component formula of Trapezium: " << TwinRates(a, b, n, eps, Form) << endl;
+			Form = Simpson;
+			cout << "Component formula of Simpson: " << TwinRates(a, b, n, eps, Form) << endl;
 			break;
 		}
 		system("pause");
@@ -37,20 +40,20 @@ int main()
 	return 0;
 }
 
-double TwinRates(double a, double b, double n, double eps)
+double TwinRates(double a, double b, int n, double eps, F Form)
 {
 	double PrIntegral = 0, NextIntegral = 1;
-	while (fabs(PrIntegral - NextIntegral) < eps)
+	while (fabs(PrIntegral - NextIntegral) > eps)
 	{
-		PrIntegral = Trapezium(a, b, n);
-		NextIntegral = Trapezium(a, b, 2 * n);
+		PrIntegral = Form(a, b, n);
+		NextIntegral = Form(a, b, 2 * n);
 		n = 2 * n;
 	}
-	double Integral = Trapezium(a, b, n);
+	double Integral = Form(a, b, n);
 	return Integral;
 }
 
-double Trapezium(double a, double b, double n)
+double Trapezium(double a, double b, int n)
 {
 	double step = (b - a) / n;
 	double t = a;
@@ -65,7 +68,7 @@ double Trapezium(double a, double b, double n)
 	return Integral;
 }
 
-double Simpson(double a, double b, double n)
+double Simpson(double a, double b, int n)
 {
 	double step = (b - a) / n;
 	double t = a;
@@ -81,24 +84,12 @@ double Simpson(double a, double b, double n)
 		Integral = Integral + 4 * sin(t*t);
 	}
 	Integral = Integral + sin(b*b);
-	Integral = Integral*step / 3;
+	Integral = Integral*step;
 	return Integral;
 }
 
-double TwinRate(double a, double b, double n, double eps)
-{
-	double PrIntegral = 0, NextIntegral = 1;
-	while (fabs(PrIntegral - NextIntegral) < eps)
-	{
-		PrIntegral = Simpson(a, b, n);
-		NextIntegral = Simpson(a, b, 2 * n);
-		n = 2 * n;
-	}
-	double Integral = Simpson(a, b, n);
-	return Integral;
-}
 
-bool IsDataValid(double a, double b, double eps, double n)
+bool IsDataValid(double a, double b, double eps, int n)
 {
 	while ((a<b) && (n>0) && (eps > 0) && (eps < 1))
 	{
@@ -107,4 +98,3 @@ bool IsDataValid(double a, double b, double eps, double n)
 	cout << "Error! Enter enother" << endl;
 	return false;
 }
-
